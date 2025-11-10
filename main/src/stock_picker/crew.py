@@ -2,8 +2,9 @@ from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from typing import List
-from crewai.tools import SerperDevTool
+from crewai_tools import SerperDevTool
 from pydantic import BaseModel, Field
+from .tools.push_tool import PushNotificationTool
 
 class TrendingCompany(BaseModel):
     """ A company that is in the news and attracting attention """
@@ -37,7 +38,6 @@ class StockPicker():
     def trending_company_finder(self) -> Agent:
         return Agent(
             config=self.agents_config['trending_company_finder'], # type: ignore[index]
-            verbose=True,
             tools=[SerperDevTool()]
         )
 
@@ -45,7 +45,6 @@ class StockPicker():
     def financial_researcher(self) -> Agent:
         return Agent(
             config=self.agents_config['financial_researcher'], # type: ignore[index]
-            verbose=True,
             tools=[SerperDevTool()]
         )
 
@@ -53,28 +52,31 @@ class StockPicker():
     def stock_picker(self) -> Agent:
         return Agent(
             config=self.agents_config['stock_picker'], # type: ignore[index]
-            verbose=True
+            tools=[PushNotificationTool()],
         )
 
     @task
     def find_trending_companies(self) -> Task:
         return Task(
             config=self.tasks_config['find_trending_companies'], # type: ignore[index]
-            output_pydantic=TrendingCompanyList
+            output_pydantic=TrendingCompanyList,
+            output_file = "output/trending_companies.json"
         )
 
     @task
     def research_trending_companies(self) -> Task:
         return Task(
             config=self.tasks_config['research_trending_companies'], # type: ignore[index]
-            output_pydantic=TrendingCompanyResearchList
+            output_pydantic=TrendingCompanyResearchList,
+            output_file = "output/research_report.json"
+
         )
     
     @task
     def pick_best_company(self) -> Task:
         return Task(
             config=self.tasks_config['pick_best_company'], # type: ignore[index]
-            output_file='output/decision.json'
+            output_file="output/decision.md"
         )
 
     @crew
@@ -91,5 +93,5 @@ class StockPicker():
             tasks=self.tasks, # Automatically created by the @task decorator
             process=Process.hierarchical,
             verbose=True,
-            manager_agent=manager()
+            manager_agent=manager,
         )
