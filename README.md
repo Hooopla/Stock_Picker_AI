@@ -1,6 +1,4 @@
 # Stock_Picker_AI
-Beep BOOP BEEP BOOP
-
 Check out this demo video: [Click me I dare you! :3](https://www.youtube.com/watch?v=yR-J1NCqteM)
 
 Requirements: 
